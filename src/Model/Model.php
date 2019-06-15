@@ -134,7 +134,7 @@ abstract class Model implements JsonSerializable
             if ($source instanceof Proxy) {
                 $parent = $source->getModel();
                 $source = $source->plural();
-            } elseif (is_string($source) && is_subclass_of($source, Model::class)) {
+            } elseif (is_string($source) && is_a($source, Model::class, true)) {
                 /** @var Model $source */
                 $parent = $source;
                 $source = $source::consume()->plural();
@@ -229,8 +229,8 @@ abstract class Model implements JsonSerializable
      */
     private static function context()
     {
-        return self::$context[self::class] = self::$context[self::class]
-            ?? (new ContextFactory())->createFromReflector(self::reflection());
+        return self::$context[static::class] = self::$context[static::class]
+            ?? (new ContextFactory())->createFromReflector(static::reflection());
 
     }
 
