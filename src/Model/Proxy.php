@@ -4,7 +4,7 @@ namespace BugbirdCo\Cabinet\Model;
 
 
 use BugbirdCo\Cabinet\Data\Data;
-use BugbirdCo\Cabinet\Model\Model;
+use function BugbirdCo\Cabinet\cab_escape_array;
 
 /**
  * Class Proxy
@@ -58,6 +58,7 @@ class Proxy
     /**
      * Loads data into the proxy. It is always in the format of a
      * list of arrays of data. E.g. [['name' => 'foo'], ['name' => 'bar']]
+     * If it is not provided in this format, a utility will fix it...
      *
      * @param array|null $data
      * @return $this
@@ -73,7 +74,7 @@ class Proxy
                     ? get_parent_class(array_shift($calledFromSource)['class'])
                     : null);
             } else {
-                $this->data = $data;
+                $this->data = cab_escape_array($data);
             }
         } else {
             throw new \RuntimeException('Tried to re-hydrate a data object');

@@ -54,7 +54,7 @@ abstract class Model implements JsonSerializable
         /** @var Model $parent */
         $parent = get_parent_class(static::class);
         $properties = [];
-        if($parent !== false) {
+        if ($parent !== false) {
             $properties = $parent::schema();
         }
 
@@ -155,16 +155,13 @@ abstract class Model implements JsonSerializable
             }
 
             if (!$proxy->hydrated()) {
-                $associative = array_filter([], function ($key) {
-                        return !is_numeric($key);
-                    }, ARRAY_FILTER_USE_KEY) > 0;
-
-                $proxy($associative ? [$source] : $source);
+                $proxy($source);
             }
 
             return $proxy;
+        } catch (RuntimeException $re) {
+            throw $re;
         } catch (Exception $e) {
-            throw $e;
             throw new RuntimeException('Failed to consume data', 0, $e);
         }
     }
