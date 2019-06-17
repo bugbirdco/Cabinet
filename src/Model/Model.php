@@ -79,11 +79,6 @@ abstract class Model implements JsonSerializable
         return $this->attributes->{$name};
     }
 
-    public function __set($name, $value)
-    {
-        $this->attributes->{$name} = $value;
-    }
-
     // Consuming framework
 
     /** @var ReflectionClass[] */
@@ -162,6 +157,7 @@ abstract class Model implements JsonSerializable
         } catch (RuntimeException $re) {
             throw $re;
         } catch (Exception $e) {
+            throw $e;
             throw new RuntimeException('Failed to consume data', 0, $e);
         }
     }

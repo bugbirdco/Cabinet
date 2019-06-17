@@ -32,7 +32,9 @@ class Data implements \JsonSerializable
 
     public function __get($name)
     {
-        return $this->data[$name];
+        return $this->data[$name] instanceof DeferredAccessor
+            ? $this->data[$name]->resolve()
+            : $this->data[$name];
     }
 
     /**
@@ -126,7 +128,7 @@ class Data implements \JsonSerializable
      *
      * @param iterable $items
      * @param string $arrayType
-     * @return array
+     * @return array|mixed
      * @throws \ReflectionException
      * @throws RegexFailed
      */
@@ -137,7 +139,7 @@ class Data implements \JsonSerializable
         // it the raw data, rather than breaking down the model
         // and consuming it
         if ($this->isModelable($arrayType) && $this->isConsumed($arrayType)) {
-            return $this->modelise($items, $this->singularise($arrayType))->plural();
+            return $this->modelise($items, $this->singularise($arrayType), true);
         }
 
         $type = $this->singularise($arrayType);
@@ -149,7 +151,7 @@ class Data implements \JsonSerializable
     /**
      * Applies the casting constraints to the applied item.
      *
-     * @param mixed $item
+     * @param mixed|Model $item
      * @param string $type
      * @return mixed|null
      * @throws \ReflectionException
@@ -158,9 +160,9 @@ class Data implements \JsonSerializable
     private function singularCast($item, string $type)
     {
         if (is_null($item)) {
-            return $this->fake($item, $type);
+            return $this->fake($type);
         } elseif ($this->isModelable($type)) {
-            return $this->modelise($item, $type)->singular();
+            return $this->modelise($item, $type, false);
         } else {
             return $this->cast($item, $type);
         }
@@ -170,15 +172,14 @@ class Data implements \JsonSerializable
      * Mocks out an entry if the schema defined the attribute as
      * existing, but one was not supplied.
      *
-     * @param mixed $item
-     * @param string $type
+     * @param string|Model $type
      * @return mixed
      * @throws RegexFailed
      * @throws \ReflectionException
      */
-    private function fake($item, string $type)
+    private function fake(string $type)
     {
-        return $this->isModelable($type) ? $this->modelise($item, $type)->singular() : $item;
+        return $this->isModelable($type) ? $this->modelise([], $type, false) : $this->cast(null, $type, []);
     }
 
     /**
@@ -210,14 +211,14 @@ class Data implements \JsonSerializable
      * one) then it will use an empty array to produce a blank model.
      *
      * @param mixed $item
-     * @param Model $type
-     * @return Model
-     * @throws \ReflectionException
-     * @throws RegexFailed
+     * @param string|Model $type
+     * @param $plural
+     * @return Model|DeferredAccessor
      */
-    private function modelise($item, string $type)
+    private function modelise($item, string $type, $plural)
     {
-        return $type::consume($this->cast($item, 'array', []), $this->model);
+
+        return new DeferredAccessor($type, $item, $plural, $this->model);
     }
 
     /**
