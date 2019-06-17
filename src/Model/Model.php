@@ -41,7 +41,7 @@ abstract class Model implements JsonSerializable
      */
     public function __construct(Data $data)
     {
-        $schema = $this->schema();
+        $schema = static::schema();
         $this->attributes = $data->constrain($schema, $this);
     }
 
@@ -49,16 +49,22 @@ abstract class Model implements JsonSerializable
      * @return array
      * @throws ReflectionException
      */
-    private function schema()
+    private static function schema()
     {
+        /** @var Model $parent */
+        $parent = get_parent_class(static::class);
+        $properties = [];
+        if($parent !== false) {
+            $properties = $parent::schema();
+        }
+
         $docString = self::reflection()->getDocComment();
 
         if ($docString == false) {
-            return [];
+            return $properties;
         }
 
         $parsedDocString = self::docBlock()->create($docString, self::context());
-        $properties = [];
 
         /** @var Property $property */
         foreach ($parsedDocString->getTagsByName('property') as $property) {
@@ -158,6 +164,7 @@ abstract class Model implements JsonSerializable
 
             return $proxy;
         } catch (Exception $e) {
+            throw $e;
             throw new RuntimeException('Failed to consume data', 0, $e);
         }
     }
@@ -165,11 +172,13 @@ abstract class Model implements JsonSerializable
     /**
      * @param Proxy $proxy
      * @param array $source
+     * @param Model $parent
      */
-    public static function fromSource(Proxy $proxy, array $source = [])
+    public static function fromSource(Proxy $proxy, array $source = [], string $parent = null)
     {
-        if (method_exists(static::class, 'source')) {
-            static::source($proxy, $source);
+        $class = is_null($parent) ? static::class : $parent;
+        if (method_exists($class, 'source')) {
+            $class::source($proxy, $source);
         }
     }
 

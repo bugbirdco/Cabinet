@@ -66,7 +66,12 @@ class Proxy
     {
         if (is_null($this->data)) {
             if (is_null($data)) {
-                $this->model::fromSource($this);
+                $calledFromSource = array_filter(debug_backtrace(1, 3), function ($trace) {
+                    return ($trace['function'] ?? null) == 'source';
+                });
+                $this->model::fromSource($this, [], sizeof($calledFromSource) > 0
+                    ? get_parent_class(array_shift($calledFromSource)['class'])
+                    : null);
             } else {
                 $this->data = $data;
             }

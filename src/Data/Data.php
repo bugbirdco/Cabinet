@@ -109,6 +109,18 @@ class Data implements \JsonSerializable
     }
 
     /**
+     * @param string|Model $type
+     * @return bool
+     * @throws RegexFailed
+     * @throws \ReflectionException
+     */
+    private function isConsumed($type)
+    {
+        $model = $this->singularise($type);
+        return method_exists(static::class, 'source') || !is_null($model::specificScope($this->model));
+    }
+
+    /**
      * Iterates over a plural attribute and casts it's children into
      * the plural type.
      *
@@ -124,12 +136,8 @@ class Data implements \JsonSerializable
         // target model, for the parent model, then we want to pass
         // it the raw data, rather than breaking down the model
         // and consuming it
-        if ($this->isModelable($arrayType)) {
-            $model = $this->singularise($arrayType);
-
-            if(method_exists(static::class, 'source') || !is_null($model::specificScope($this->model))) {
-                return $model::consume($items, $this->model)->plural();
-            }
+        if ($this->isModelable($arrayType) && $this->isConsumed($arrayType)) {
+            return $this->modelise($items, $this->singularise($arrayType))->plural();
         }
 
         $type = $this->singularise($arrayType);
@@ -152,7 +160,7 @@ class Data implements \JsonSerializable
         if (is_null($item)) {
             return $this->fake($item, $type);
         } elseif ($this->isModelable($type)) {
-            return $this->modelise($item, $type);
+            return $this->modelise($item, $type)->singular();
         } else {
             return $this->cast($item, $type);
         }
@@ -165,10 +173,12 @@ class Data implements \JsonSerializable
      * @param mixed $item
      * @param string $type
      * @return mixed
+     * @throws RegexFailed
+     * @throws \ReflectionException
      */
     private function fake($item, string $type)
     {
-        return $this->isModelable($type) ? new $type(new static()) : $item;
+        return $this->isModelable($type) ? $this->modelise($item, $type)->singular() : $item;
     }
 
     /**
@@ -201,13 +211,13 @@ class Data implements \JsonSerializable
      *
      * @param mixed $item
      * @param Model $type
-     * @return mixed
+     * @return Model
      * @throws \ReflectionException
      * @throws RegexFailed
      */
     private function modelise($item, string $type)
     {
-        return $type::consume($this->cast($item, 'array', []), $this->model)->singular();
+        return $type::consume($this->cast($item, 'array', []), $this->model);
     }
 
     /**
