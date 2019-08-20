@@ -10,7 +10,7 @@
         }
     ],
     "files": [
-        'src/Utils.php'
+        "src/Utils.php"
     ],
     "autoload": {
         "psr-4": {
