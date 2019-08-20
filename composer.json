@@ -9,10 +9,10 @@
             "email": "jordan@bugbird.co"
         }
     ],
-    "files": [
-        "src/Utils.php"
-    ],
     "autoload": {
+        "files": [
+            "src/Utils.php"
+        ],
         "psr-4": {
             "BugbirdCo\\Cabinet\\": "src/",
             "BugbirdCo\\Cabinet\\Examples\\": "examples/"
