@@ -1,24 +1,27 @@
 {
-  "name": "bugbirdco/cabinet",
-  "description": "Covenant general purpose ORM to represent any data",
-  "type": "library",
-  "license": "BSD-3-Clause",
-  "authors": [
-    {
-      "name": "Jordan Bugbird",
-      "email": "jordan@bugbird.co"
+    "name": "bugbirdco/cabinet",
+    "description": "Convenient general purpose ORM to represent any data",
+    "type": "library",
+    "license": "BSD-3-Clause",
+    "authors": [
+        {
+            "name": "Jordan Bugbird",
+            "email": "jordan@bugbird.co"
+        }
+    ],
+    "files": [
+        'src/Utils.php'
+    ],
+    "autoload": {
+        "psr-4": {
+            "BugbirdCo\\Cabinet\\": "src/",
+            "BugbirdCo\\Cabinet\\Examples\\": "examples/"
+        }
+    },
+    "require": {
+        "php": ">7.0",
+        "phpdocumentor/reflection-docblock": "^4.3",
+        "ext-json": "*",
+        "spatie/regex": "^1.4"
     }
-  ],
-  "autoload": {
-    "psr-4": {
-      "BugbirdCo\\Cabinet\\": "src/",
-      "BugbirdCo\\Cabinet\\Examples\\": "examples/"
-    }
-  },
-  "require": {
-    "php": ">7.0",
-    "phpdocumentor/reflection-docblock": "^4.3",
-    "ext-json": "*",
-    "spatie/regex": "^1.4"
-  }
 }

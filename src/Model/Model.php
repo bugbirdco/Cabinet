@@ -90,7 +90,7 @@ abstract class Model implements JsonSerializable
 
     /**
      * Entry point for constructing models. Returns a proxy which is used to
-     * chain mutations. Will except nothing, and array, a model class, or a
+     * chain mutations. Will accept nothing, an array, a model class, or a
      * constructing model.
      *
      * The construction of a model will take in an object.
