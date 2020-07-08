@@ -14,7 +14,7 @@ use BugbirdCo\Cabinet\Operations;
  *
  * @package BugbirdCo\Cabinet
  */
-abstract class Deferrer
+abstract class Deferrer implements \JsonSerializable
 {
     use Operations;
 
@@ -45,7 +45,7 @@ abstract class Deferrer
                 return $this->create($item, $singular, $parent);
             }, $items);
         } else {
-            $namedElements = explode('/', $parent);
+            $namedElements = explode('\\', $parent);
             $created = array_reduce($namedElements, function ($model) use (&$namedElements, $type, $items) {
                 if(!is_null($model)) {
                     return $model;
@@ -72,5 +72,10 @@ abstract class Deferrer
     public function resolve()
     {
         return $this->value = $this->value ?? ($this->accessor)();
+    }
+
+    public function jsonSerialize()
+    {
+        return $this->resolve();
     }
 }

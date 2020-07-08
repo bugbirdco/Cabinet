@@ -16,7 +16,7 @@ class ModelDeferrer extends Deferrer
     protected function make($name, $type, $items)
     {
         $name = "consume{$name}";
-        return method_exists($type, $name) ? $type::$name(new Data($items)) : null;
+        return method_exists($type, $name) ? $type::$name($items) : null;
     }
 
     protected function fallback($type, $items)
