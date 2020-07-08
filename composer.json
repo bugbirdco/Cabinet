@@ -1,27 +1,36 @@
 {
-    "name": "bugbirdco/cabinet",
-    "description": "Convenient general purpose ORM to represent any data",
-    "type": "library",
-    "license": "BSD-3-Clause",
-    "authors": [
-        {
-            "name": "Jordan Bugbird",
-            "email": "jordan@bugbird.co"
-        }
-    ],
-    "autoload": {
-        "files": [
-            "src/Utils.php"
-        ],
-        "psr-4": {
-            "BugbirdCo\\Cabinet\\": "src/",
-            "BugbirdCo\\Cabinet\\Examples\\": "examples/"
-        }
-    },
-    "require": {
-        "php": ">7.0",
-        "phpdocumentor/reflection-docblock": "^4.3",
-        "ext-json": "*",
-        "spatie/regex": "^1.4"
+  "name": "bugbirdco/cabinet",
+  "description": "Convenient general purpose object mapper to represent any data",
+  "type": "library",
+  "license": "BSD-3-Clause",
+  "authors": [
+    {
+      "name": "Jordan Bugbird",
+      "email": "jordan@bugbird.co"
     }
+  ],
+  "scripts": {
+    "testing": "@php ./run-example.php"
+  },
+  "autoload": {
+    "files": [
+      "src/Utils.php"
+    ],
+    "psr-4": {
+      "BugbirdCo\\Cabinet\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "BugbirdCo\\Cabinet\\Examples\\": "examples/"
+    }
+  },
+  "require": {
+    "php": ">7.0",
+    "phpdocumentor/reflection-docblock": "^4.3",
+    "ext-json": "*"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.1"
+  }
 }

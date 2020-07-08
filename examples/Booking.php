@@ -1,9 +1,9 @@
 <?php
 
 namespace BugbirdCo\Cabinet\Examples;
-use BugbirdCo\Cabinet\Data\Data;
-use BugbirdCo\Cabinet\Model\Model;
 
+use BugbirdCo\Cabinet\Data\Data;
+use BugbirdCo\Cabinet\Model;
 
 /**
  * Class Booking
@@ -19,10 +19,11 @@ class Booking extends Model
     /**
      * @return Booking
      * @throws \ReflectionException
+     * @throws \Spatie\Regex\RegexFailed
      */
     public static function test()
     {
-        $booking = new self(new Data([
+        $data = new Data([
             'recordLocator' => 'ABC123',
             'outstandingBalance' => 1,
             'bookingId' => '123456789',
@@ -40,8 +41,7 @@ class Booking extends Model
                     'etd' => '2018-01-02T00:00:00'
                 ],
             ]
-        ]));
-
-        dd($booking);
+        ]);
+        var_dump((new self($data))->flights[0]->destination);
     }
 }

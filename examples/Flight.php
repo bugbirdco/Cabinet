@@ -2,7 +2,7 @@
 
 namespace BugbirdCo\Cabinet\Examples;
 
-use BugbirdCo\Cabinet\Model\Model;
+use BugbirdCo\Cabinet\Model;
 
 
 /**

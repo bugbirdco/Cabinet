@@ -2,6 +2,7 @@
 
 namespace BugbirdCo\Cabinet\Data;
 
+use BugbirdCo\Cabinet\Data;
 
 class JsonData extends Data
 {
