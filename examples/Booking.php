@@ -43,7 +43,7 @@ class Booking extends Model
         ])->flights[0]->destination);
     }
 
-    public static function make($data, ...$hello)
+    public static function make($data = [])
     {
         return new static(new Data($data));
     }
