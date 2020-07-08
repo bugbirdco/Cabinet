@@ -19,11 +19,10 @@ class Booking extends Model
     /**
      * @return Booking
      * @throws \ReflectionException
-     * @throws \Spatie\Regex\RegexFailed
      */
     public static function test()
     {
-        $data = new Data([
+        var_dump(static::make([
             'recordLocator' => 'ABC123',
             'outstandingBalance' => 1,
             'bookingId' => '123456789',
@@ -41,7 +40,11 @@ class Booking extends Model
                     'etd' => '2018-01-02T00:00:00'
                 ],
             ]
-        ]);
-        var_dump((new self($data))->flights[0]->destination);
+        ])->flights[0]->destination);
+    }
+
+    public static function make($data, ...$hello)
+    {
+        return new static(new Data($data));
     }
 }

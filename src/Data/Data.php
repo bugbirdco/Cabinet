@@ -19,9 +19,6 @@ class Data implements JsonSerializable
 {
     use Operations;
 
-    /** @var callable[] */
-    public static $constructors = [];
-
     /** @var array */
     private $original;
     /** @var array */

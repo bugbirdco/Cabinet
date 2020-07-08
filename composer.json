@@ -27,7 +27,7 @@
   },
   "require": {
     "php": ">7.0",
-    "phpdocumentor/reflection-docblock": "^4.3",
+    "phpdocumentor/reflection-docblock": "^5.0",
     "ext-json": "*"
   },
   "require-dev": {

@@ -106,4 +106,6 @@ abstract class Model implements JsonSerializable
     {
         return $this->attributes;
     }
+
+    abstract public static function make(...$args);
 }
