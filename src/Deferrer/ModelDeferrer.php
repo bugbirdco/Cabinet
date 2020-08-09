@@ -2,6 +2,7 @@
 
 namespace BugbirdCo\Cabinet\Deferrer;
 
+use App\Models\Cabinet\Action\RemainingChanges;
 use BugbirdCo\Cabinet\Data\Data;
 
 /**
@@ -11,16 +12,18 @@ use BugbirdCo\Cabinet\Data\Data;
  *
  * @package BugbirdCo\Cabinet\Accessor
  */
-class ModelDeferrer extends Deferrer
+class ModelDeferrer extends AutoDeferrer
 {
     protected function make($name, $type, $items)
     {
         $name = "consume{$name}";
-        return method_exists($type, $name) ? $type::$name($items) : null;
+        return method_exists($type, $name) ? $type::$name($items, $this->model) : null;
     }
 
     protected function fallback($type, $items)
     {
+        if (is_a($items, $type))
+            return $items;
         return new $type (new Data($items));
     }
 }

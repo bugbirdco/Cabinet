@@ -9,12 +9,12 @@ namespace BugbirdCo\Cabinet\Deferrer;
  *
  * @package BugbirdCo\Cabinet\Accessor
  */
-class ClassDeferrer extends Deferrer
+class ClassDeferrer extends AutoDeferrer
 {
     protected function make($name, $type, $items)
     {
         $name = "provide{$name}";
-        return method_exists($type, $name) ? $type::$name($items) : null;
+        return method_exists($type, $name) ? $type::$name($items, $this->model) : null;
     }
 
     protected function fallback($type, $items)

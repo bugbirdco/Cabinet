@@ -14,53 +14,57 @@ use BugbirdCo\Cabinet\Operations;
  *
  * @package BugbirdCo\Cabinet
  */
-abstract class Deferrer implements \JsonSerializable
+abstract class AutoDeferrer implements \JsonSerializable, DeferresAccess
 {
     use Operations;
-
-    /** @var callable */
-    private $accessor;
 
     /** @var Model[]|Model */
     private $value = null;
 
+    private $items;
+    private $type;
+    private $parent;
+    protected $model;
+
     /**
      * Accessor constructor.
-     * @param array $items
+     * @param mixed $items
      * @param string $type
      * @param string $parent
      */
-    public function __construct($items, string $type, string $parent)
+    public function __construct($items, string $type, string $parent, Model $model)
     {
-        $this->accessor = function () use ($type, $items, $parent) {
-            return $this->create($items, $type, $parent);
-        };
+        $this->items = $items;
+        $this->type = $type;
+        $this->parent = $parent;
+        $this->model = $model;
     }
 
-    protected function create($items, string $type, string $parent)
+    protected function create($item, $type)
     {
         if (static::isPlural($type)) {
             $singular = self::singularise($type);
-            return array_map(function ($item) use ($parent, $singular) {
-                return $this->create($item, $singular, $parent);
-            }, $items);
+            return array_map(function ($item) use ($singular) {
+                return $this->create($item, $singular);
+            }, $item);
         } else {
-            $namedElements = explode('\\', $parent);
-            $created = array_reduce($namedElements, function ($model) use (&$namedElements, $type, $items) {
-                if(!is_null($model)) {
+            $namedElements = explode('\\', $this->parent);
+            $created = array_reduce($namedElements, function ($model) use (&$namedElements, $item, $type) {
+                if (!is_null($model)) {
                     return $model;
                 }
 
-                $object = $this->make(implode($namedElements), $type, $items);
+                $object = $this->make(implode($namedElements), $type, $item);
                 array_shift($namedElements);
                 return $object;
             });
 
-            return is_null($created) ? $this->fallback($type, $items) : $created;
+            return is_null($created) ? $this->fallback($type, $item) : $created;
         }
     }
 
     abstract protected function make($name, $type, $items);
+
     abstract protected function fallback($type, $items);
 
     /**
@@ -71,7 +75,7 @@ abstract class Deferrer implements \JsonSerializable
      */
     public function resolve()
     {
-        return $this->value = $this->value ?? ($this->accessor)();
+        return $this->value = $this->value ?? $this->create($this->items, $this->type);
     }
 
     public function jsonSerialize()

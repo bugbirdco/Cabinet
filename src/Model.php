@@ -21,6 +21,9 @@ abstract class Model implements JsonSerializable
     /** @var Data $attributes */
     protected $attributes;
 
+    public $include = [];
+    public $exclude = [];
+
     /** @var ReflectionClass[] */
     protected static $reflection = [];
     /** @var DocBlockFactory */
@@ -100,6 +103,26 @@ abstract class Model implements JsonSerializable
     public function __get($name)
     {
         return $this->attributes->{$name};
+    }
+
+    public function __isset($name)
+    {
+        return isset($this->attributes->{$name});
+    }
+
+    public function isDeferred($name)
+    {
+        return $this->attributes->isDeferred($name);
+    }
+
+    /**
+     * @param $elements
+     * @return $this
+     * @throws \ReflectionException
+     */
+    public function extend($elements)
+    {
+        return new static(new Data($elements + $this->attributes->raw()));
     }
 
     public function jsonSerialize()

@@ -2,8 +2,9 @@
 
 namespace BugbirdCo\Cabinet;
 
+use BugbirdCo\Cabinet\Data\Data;
 use BugbirdCo\Cabinet\Deferrer\ClassDeferrer;
-use BugbirdCo\Cabinet\Deferrer\Deferrer;
+use BugbirdCo\Cabinet\Deferrer\InlineDeferrer;
 use BugbirdCo\Cabinet\Deferrer\ModelDeferrer;
 
 trait Operations
@@ -60,21 +61,28 @@ trait Operations
      * @param array $items
      * @param string $arrayType
      * @param string $parent
+     * @param Model $parent
      * @return array|mixed
      */
-    protected static function pluralCast($items, $arrayType, $parent)
+    protected static function pluralCast($items, $arrayType, $parent, $model = null)
     {
+        $arrayType = static::escapeType($arrayType);
+        if (static::isInlineDeferrer($items)) {
+            /** @var InlineDeferrer $items */
+            return $items->constraints($arrayType, $parent, $model);
+        }
+
         // If there is a main consumer or a specific consumer for the
         // target model, for the parent model, then we want to pass
         // it the raw data, rather than breaking down the model
         // and consuming it
         if (static::isModelable($arrayType)) {
-            return static::modelise($items, $arrayType, $parent);
+            return static::modelise($items, $arrayType, $parent, $model);
         }
 
         $type = static::singularise($arrayType);
-        return array_map(function ($item) use ($type, $parent) {
-            return static::singularCast($item, $type, $parent);
+        return array_map(function ($item) use ($type, $parent, $model) {
+            return static::singularCast($item, $type, $parent, $model);
         }, static::cast($items, 'array', []));
     }
 
@@ -84,16 +92,24 @@ trait Operations
      * @param mixed|Model $item
      * @param string $type
      * @param string $parent
+     * @param Model $parent
      * @return mixed|null
      */
-    protected static function singularCast($item, string $type, $parent)
+    protected static function singularCast($item, string $type, $parent, $model = null)
     {
         if (is_null($item)) {
-            return static::fake($type, $parent);
+            $type = static::canBeNull($type) ? 'null' : $type;
+            return static::fake($type, $parent, $model);
+        }
+
+        $type = static::escapeType($type);
+        if (static::isInlineDeferrer($item)) {
+            /** @var InlineDeferrer $item */
+            return $item->constraints($type, $parent, $model);
         } elseif (static::isModelable($type)) {
-            return static::modelise($item, $type, $parent);
+            return static::modelise($item, $type, $parent, $model);
         } elseif (static::isObjectable($type)) {
-            return static::objectify($item, $type, $parent);
+            return static::objectify($item, $type, $parent, $model);
         } else {
             return static::cast($item, $type);
         }
@@ -105,16 +121,22 @@ trait Operations
      *
      * @param string|Model $type
      * @param string $parent
+     * @param Model $model
      * @return mixed
      */
-    protected static function fake(string $type, $parent)
+    protected static function fake(string $type, $parent, $model)
     {
         if (self::isModelable($type)) {
-            return static::modelise([], $type, $parent);
+            return static::modelise([], $type, $parent, $model);
         } elseif (self::isObjectable($type)) {
-            return static::objectify(null, $type, $parent);
+            return static::objectify(null, $type, $parent, $model);
         }
-        return static::isModelable($type) ?: static::cast(null, $type, []);
+        return static::cast(null, $type, []);
+    }
+
+    protected static function isInlineDeferrer($item)
+    {
+        return $item instanceof InlineDeferrer;
     }
 
     /**
@@ -148,11 +170,13 @@ trait Operations
      * @param array $item
      * @param string $type
      * @param string $parent
-     * @return Model|Deferrer
+     * @return Model|ModelDeferrer
      */
-    protected static function modelise($item, string $type, string $parent)
+    protected static function modelise($item, string $type, string $parent, Model $model)
     {
-        return new ModelDeferrer($item, $type, $parent);
+        if ($item instanceof ModelDeferrer)
+            return $item;
+        return is_a($item, $type) ? $item : new ModelDeferrer($item, $type, $parent, $model);
     }
 
     /**
@@ -161,11 +185,11 @@ trait Operations
      * @param array $item
      * @param string $type
      * @param string $parent
-     * @return mixed
+     * @return mixed|ClassDeferrer
      */
-    protected static function objectify($item, string $type, string $parent)
+    protected static function objectify($item, string $type, string $parent, Model $model)
     {
-        return new ClassDeferrer($item, $type, $parent);
+        return is_a($item, $type) ? $item : new ClassDeferrer($item, $type, $parent, $model);
     }
 
     /**
@@ -183,6 +207,28 @@ trait Operations
         if (static::isObjectable($type)) {
             $type = 'object';
         }
+        // Handle array to string conversions. If the item is
+        // an array, is empty, and we are converting to a scalar,
+        // treat the empty array as null
+        if ($type != 'array' && is_array($item) && sizeof($item) == 0) {
+            $item = null;
+        }
         return settype($item, $type) ? $item : $default;
+    }
+
+    /**
+     * Can the element be null?
+     *
+     * @param $type
+     * @return false|int
+     */
+    protected static function canBeNull($type)
+    {
+        return preg_match('/\\|?null\\|?/', $type);
+    }
+
+    protected static function escapeType($type)
+    {
+        return explode('|', trim(str_replace('null|', '', $type), '|'))[0];
     }
 }
