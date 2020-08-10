@@ -127,7 +127,7 @@ abstract class Model implements JsonSerializable
         if (empty($into)) {
             return new static($data);
         } else {
-            return new ($into)($data);
+            return new $into ($data);
         }
     }
 
