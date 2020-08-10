@@ -102,12 +102,12 @@ abstract class Model implements JsonSerializable
 
     public function __get($name)
     {
-        return $this->attributes->{$name};
+        return $this->attributes->__get($name);
     }
 
     public function __isset($name)
     {
-        return isset($this->attributes->{$name});
+        return $this->attributes->__isset($name);
     }
 
     public function isDeferred($name)
@@ -121,9 +121,9 @@ abstract class Model implements JsonSerializable
      * @return $this|static|self
      * @throws ReflectionException
      */
-    public function extend($elements = [], $into = null)
+    public function extend($elements = [], $into = null, $include = null, $exclude = [])
     {
-        $data = new Data($elements + $this->attributes->raw());
+        $data = new Data($elements + $this->attributes->raw($include, $exclude)); // TODO: Create merge recursive handler
         if (empty($into)) {
             return new static($data);
         } else {
