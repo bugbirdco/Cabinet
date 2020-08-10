@@ -116,13 +116,19 @@ abstract class Model implements JsonSerializable
     }
 
     /**
-     * @param $elements
-     * @return $this
-     * @throws \ReflectionException
+     * @param array $elements Things to overwrite on extension
+     * @param null|string $into Class name of a different model
+     * @return $this|static|self
+     * @throws ReflectionException
      */
-    public function extend($elements)
+    public function extend($elements = [], $into = null)
     {
-        return new static(new Data($elements + $this->attributes->raw()));
+        $data = new Data($elements + $this->attributes->raw());
+        if (empty($into)) {
+            return new static($data);
+        } else {
+            return new ($into)($data);
+        }
     }
 
     public function jsonSerialize()
