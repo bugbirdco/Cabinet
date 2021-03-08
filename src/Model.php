@@ -107,5 +107,12 @@ abstract class Model implements JsonSerializable
         return $this->attributes;
     }
 
-    abstract public static function make();
+    /**
+     * @param array $attrs
+     * @return static
+     * @throws ReflectionException
+     */
+    public static function make($attrs) {
+        return new static(new Data($attrs));
+    }
 }
