@@ -2,7 +2,7 @@
 
 namespace BugbirdCo\Cabinet\Data;
 
-use BugbirdCo\Cabinet\Deferrer\Deferrer;
+use BugbirdCo\Cabinet\Deferrer\DeferresAccess;
 use BugbirdCo\Cabinet\Model;
 use BugbirdCo\Cabinet\Operations;
 use JsonSerializable;
@@ -35,9 +35,14 @@ class Data implements JsonSerializable
 
     public function __get($name)
     {
-        return $this->data[$name] instanceof Deferrer
+        return $this->data[$name] instanceof DeferresAccess
             ? $this->data[$name]->resolve()
             : $this->data[$name];
+    }
+
+    public function __isset($name)
+    {
+        return isset($this->data[$name]);
     }
 
     /**
@@ -62,12 +67,19 @@ class Data implements JsonSerializable
          */
         foreach ($schema as $key => $type) {
             if (static::isPlural($type))
-                $this->data[$key] = static::pluralCast($this->original[$key] ?? [], $type, $modelName);
+                $this->data[$key] = static::pluralCast($this->original[$key] ?? [], $type, $modelName, $this->model);
             else
-                $this->data[$key] = static::singularCast($this->original[$key] ?? null, $type, $modelName);
+                $this->data[$key] = static::singularCast($this->original[$key] ?? null, $type, $modelName, $this->model);
         }
 
         return $this;
+    }
+
+    public function raw(array $including = null, array $excluding = [])
+    {
+        return array_diff_key(
+            $including ? array_intersect_key($this->data, array_flip($including)) : $this->data,
+            array_flip($excluding));
     }
 
     /**
@@ -79,6 +91,29 @@ class Data implements JsonSerializable
      */
     public function jsonSerialize()
     {
-        return $this->data;
+        return $this->raw(
+            empty($this->model->include) ? null : $this->model->include,
+            $this->model->exclude
+        );
+    }
+
+    public function isDeferred($name)
+    {
+        return $this->data[$name] instanceof DeferresAccess;
+    }
+
+    protected function changed($comp)
+    {
+        return array_udiff(ksort($this->data), ksort($comp), function ($a, $b) {
+            if ($a instanceof DeferresAccess && !($b instanceof DeferresAccess)) {
+                return 1;
+            } else if ($b instanceof DeferresAccess && !($a instanceof DeferresAccess)) {
+                return 0;
+            } else if ($a == $b) {
+                return 0;
+            } else {
+                return $a > $b ? 1 : -1;
+            }
+        });
     }
 }
