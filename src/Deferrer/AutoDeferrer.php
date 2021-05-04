@@ -48,18 +48,26 @@ abstract class AutoDeferrer implements \JsonSerializable, DeferresAccess
                 return $this->create($item, $singular);
             }, $item);
         } else {
-            $namedElements = explode('\\', $this->parent);
-            $created = array_reduce($namedElements, function ($model) use (&$namedElements, $item, $type) {
-                if (!is_null($model)) {
-                    return $model;
+            $class = $this->parent;
+            while($class !== false) {
+                $namedElements = explode('\\', $class);
+                $created = array_reduce($namedElements, function ($model) use (&$namedElements, $item, $type) {
+                    if (!is_null($model)) {
+                        return $model;
+                    }
+
+                    $object = $this->make(implode($namedElements), $type, $item);
+                    array_shift($namedElements);
+                    return $object;
+                });
+                if($created) {
+                    return $created;
                 }
 
-                $object = $this->make(implode($namedElements), $type, $item);
-                array_shift($namedElements);
-                return $object;
-            });
+                $class = get_parent_class($class);
+            }
 
-            return is_null($created) ? $this->fallback($type, $item) : $created;
+            return $this->fallback($type, $item);
         }
     }
 

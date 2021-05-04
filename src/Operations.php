@@ -2,8 +2,10 @@
 
 namespace BugbirdCo\Cabinet;
 
+use AurignyLabs\Klint\Bridges\Avantik\Booking\Seat;
 use BugbirdCo\Cabinet\Data\Data;
 use BugbirdCo\Cabinet\Deferrer\ClassDeferrer;
+use BugbirdCo\Cabinet\Deferrer\DeferresAccess;
 use BugbirdCo\Cabinet\Deferrer\InlineDeferrer;
 use BugbirdCo\Cabinet\Deferrer\ModelDeferrer;
 
@@ -70,6 +72,8 @@ trait Operations
         if (static::isInlineDeferrer($items)) {
             /** @var InlineDeferrer $items */
             return $items->constraints($arrayType, $parent, $model);
+        } elseif (static::isDeferrer($items)) {
+            return $items;
         }
 
         // If there is a main consumer or a specific consumer for the
@@ -92,7 +96,7 @@ trait Operations
      * @param mixed|Model $item
      * @param string $type
      * @param string $parent
-     * @param Model $parent
+     * @param Model  $model
      * @return mixed|null
      */
     protected static function singularCast($item, string $type, $parent, $model = null)
@@ -106,6 +110,8 @@ trait Operations
         if (static::isInlineDeferrer($item)) {
             /** @var InlineDeferrer $item */
             return $item->constraints($type, $parent, $model);
+        } elseif (static::isDeferrer($item)) {
+            return $item;
         } elseif (static::isModelable($type)) {
             return static::modelise($item, $type, $parent, $model);
         } elseif (static::isObjectable($type)) {
@@ -126,12 +132,19 @@ trait Operations
      */
     protected static function fake(string $type, $parent, $model)
     {
-        if (self::isModelable($type)) {
+        if ($type === 'null') {
+            return static::cast(null, 'null', []);
+        } elseif (self::isModelable($type)) {
             return static::modelise([], $type, $parent, $model);
         } elseif (self::isObjectable($type)) {
             return static::objectify(null, $type, $parent, $model);
         }
         return static::cast(null, $type, []);
+    }
+
+    protected static function isDeferrer($item)
+    {
+        return $item instanceof DeferresAccess;
     }
 
     protected static function isInlineDeferrer($item)

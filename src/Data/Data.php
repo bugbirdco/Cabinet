@@ -45,6 +45,11 @@ class Data implements JsonSerializable
         return isset($this->data[$name]);
     }
 
+    public function source()
+    {
+        return $this->original;
+    }
+
     /**
      * This function applies the constraints and casting information
      * provided in the schema attribute in the format of:
