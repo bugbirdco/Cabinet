@@ -137,12 +137,11 @@ abstract class Model implements JsonSerializable
     }
 
     /**
-     * @param array $attrs
      * @return static
      * @throws ReflectionException
      */
-    public static function make($attrs)
+    public static function make()
     {
-        return new static(new Data($attrs));
+        return new static(new Data(func_get_args()[0] ?? []));
     }
 }
