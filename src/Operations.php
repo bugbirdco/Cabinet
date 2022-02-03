@@ -226,6 +226,7 @@ trait Operations
         if ($type != 'array' && is_array($item) && sizeof($item) == 0) {
             $item = null;
         }
+        if($type == 'mixed') return $item;
         return settype($item, $type) ? $item : $default;
     }
 
