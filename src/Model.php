@@ -147,6 +147,9 @@ abstract class Model implements JsonSerializable
      */
     public static function make()
     {
-        return new static(new Data(func_get_args()[0] ?? []));
+        $args = func_get_args();
+        $data = $args[0] ?? [];
+        $remaining = array_slice($args, 1);
+        return new static(new Data($data), ...$remaining);
     }
 }
