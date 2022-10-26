@@ -108,7 +108,6 @@ trait Operations
 
         $type = static::escapeType($type);
         if (static::isInlineDeferrer($item, $type)) {
-            /** @var InlineDeferrer $item */
             return InlineDeferrer::wrap($item)->constraints($type, $parent, $model);
         } elseif (static::isDeferrer($item)) {
             return $item;
@@ -149,7 +148,7 @@ trait Operations
 
     protected static function isInlineDeferrer($item, $type)
     {
-        return $item instanceof InlineDeferrer || !preg_match('/^callable/i', $type);
+        return $item instanceof InlineDeferrer || (is_callable($item) && !preg_match('/^callable/i', $type));
     }
 
     /**
