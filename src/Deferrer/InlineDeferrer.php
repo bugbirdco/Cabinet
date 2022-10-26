@@ -15,6 +15,12 @@ class InlineDeferrer implements DeferresAccess, \JsonSerializable
     private $model;
     private $value = null;
 
+    public static function wrap(callable|self $deferrer)
+    {
+        if ($deferrer instanceof static) return $deferrer;
+        return new static($deferrer);
+    }
+
     public function __construct(callable $deferrer)
     {
         $this->accessor = $deferrer;
