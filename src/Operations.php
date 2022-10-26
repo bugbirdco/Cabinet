@@ -69,9 +69,9 @@ trait Operations
     protected static function pluralCast($items, $arrayType, $parent, $model = null)
     {
         $arrayType = static::escapeType($arrayType);
-        if (static::isInlineDeferrer($items)) {
+        if (castatic::isInlineDeferrer($items, $arrayType)) {
             /** @var InlineDeferrer $items */
-            return $items->constraints($arrayType, $parent, $model);
+            return InlineDeferrer::wrap($items)->constraints($arrayType, $parent, $model);
         } elseif (static::isDeferrer($items)) {
             return $items;
         }
@@ -96,7 +96,7 @@ trait Operations
      * @param mixed|Model $item
      * @param string $type
      * @param string $parent
-     * @param Model  $model
+     * @param Model $model
      * @return mixed|null
      */
     protected static function singularCast($item, string $type, $parent, $model = null)
@@ -107,9 +107,9 @@ trait Operations
         }
 
         $type = static::escapeType($type);
-        if (static::isInlineDeferrer($item)) {
+        if (static::isInlineDeferrer($item, $type)) {
             /** @var InlineDeferrer $item */
-            return $item->constraints($type, $parent, $model);
+            return InlineDeferrer::wrap($item)->constraints($type, $parent, $model);
         } elseif (static::isDeferrer($item)) {
             return $item;
         } elseif (static::isModelable($type)) {
@@ -147,9 +147,9 @@ trait Operations
         return $item instanceof DeferresAccess;
     }
 
-    protected static function isInlineDeferrer($item)
+    protected static function isInlineDeferrer($item, $type)
     {
-        return $item instanceof InlineDeferrer;
+        return $item instanceof InlineDeferrer || !preg_match('/^callable/i', $type);
     }
 
     /**
@@ -226,7 +226,7 @@ trait Operations
         if ($type != 'array' && is_array($item) && sizeof($item) == 0) {
             $item = null;
         }
-        if($type == 'mixed') return $item;
+        if ($type == 'mixed') return $item;
         return settype($item, $type) ? $item : $default;
     }
 
