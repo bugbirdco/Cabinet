@@ -69,7 +69,7 @@ trait Operations
     protected static function pluralCast($items, $arrayType, $parent, $model = null)
     {
         $arrayType = static::escapeType($arrayType);
-        if (castatic::isInlineDeferrer($items, $arrayType)) {
+        if (static::isInlineDeferrer($items, $arrayType)) {
             /** @var InlineDeferrer $items */
             return InlineDeferrer::wrap($items)->constraints($arrayType, $parent, $model);
         } elseif (static::isDeferrer($items)) {
