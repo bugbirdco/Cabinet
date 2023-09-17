@@ -148,7 +148,7 @@ trait Operations
 
     protected static function isInlineDeferrer($item, $type)
     {
-        return $item instanceof InlineDeferrer || (is_callable($item) && !preg_match('/^callable/i', $type));
+        return $item instanceof InlineDeferrer || (is_object($item) && is_callable($item) && !preg_match('/^callable/i', $type));
     }
 
     /**
